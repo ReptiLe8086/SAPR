@@ -1,0 +1,15 @@
+Bar parameters:
+  №   A   E   L   Sigma
+= 1 1.0 1.0 1.0 1.0
+= 2 2.0 1.0 2.0 1.0
+Terminations:
+  Left   Right
+? 1 1
+Concentrated loads:
+  Node F
+# 2 5.0
+# 3 -5.0
+Distributed loads:
+  Bar q
+~ 1 -2.0
+~ 2 2.0

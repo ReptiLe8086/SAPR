@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="447.0" prefWidth="672.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainWindowController">
+   <children>
+      <Button fx:id="PreProcessorButton" layoutX="247.0" layoutY="130.0" mnemonicParsing="false" onAction="#PreProcessorClicked" prefHeight="40.0" prefWidth="179.0" text="Препроцессор" />
+      <Button fx:id="ProcessorButton" layoutX="247.0" layoutY="184.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="179.0" text="Процессор" />
+      <Button fx:id="PostProcessorButton" layoutX="247.0" layoutY="236.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="179.0" text="Постпроцессор" />
+   </children>
+</AnchorPane>
