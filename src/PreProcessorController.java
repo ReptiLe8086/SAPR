@@ -644,67 +644,74 @@ public class PreProcessorController {
     }
 
     public void projectFBClicked() {
-       Stage stage = new Stage();
-       stage.setTitle("Project File");
-       Group group = new Group();
-        Text inviteText = new Text("Введите имя файла:");
-        inviteText.setX(150);
-        inviteText.setY(50);
-        TextField fileNameTextField = new TextField();
-        fileNameTextField.setLayoutX(125);
-        fileNameTextField.setLayoutY(60);
-        Button createButton = new Button();
-        createButton.setLayoutX(110);
-        createButton.setLayoutY(90);
-        createButton.setText("Сформировать файл проекта");
-        createButton.setOnAction(event -> {
-            String fileName = fileNameTextField.getText() + ".kpr";
-            File projectFile = new File(fileName);
+        if (isValidTermination()) {
+            Stage stage = new Stage();
+            stage.setTitle("Project File");
+            Group group = new Group();
+            Text inviteText = new Text("Введите имя файла:");
+            inviteText.setX(150);
+            inviteText.setY(50);
+            TextField fileNameTextField = new TextField();
+            fileNameTextField.setLayoutX(125);
+            fileNameTextField.setLayoutY(60);
+            Button createButton = new Button();
+            createButton.setLayoutX(110);
+            createButton.setLayoutY(90);
+            createButton.setText("Сформировать файл проекта");
+            createButton.setOnAction(event -> {
+                String fileName = fileNameTextField.getText() + ".kpr";
+                File projectFile = new File(fileName);
 
 
-            try {
-                FileWriter fileWriter = new FileWriter(projectFile);
-                fileWriter.write("Bar parameters:\n");
-                fileWriter.write("  №   A   E   L   Sigma\n");
-                for(int idx = 0; idx < SAPR.barArray.size(); idx++)
-                {
-                    fileWriter.write("= " + SAPR.barArray.get(idx).number + " " +
-                                         SAPR.barArray.get(idx).area + " " +
-                                         SAPR.barArray.get(idx).elasticity + " " +
-                                         SAPR.barArray.get(idx).length + " " +
-                                         SAPR.barArray.get(idx).sigma +"\n");
+                try {
+                    FileWriter fileWriter = new FileWriter(projectFile);
+                    fileWriter.write("Bar parameters:\n");
+                    fileWriter.write("  №   A   E   L   Sigma\n");
+                    for (int idx = 0; idx < SAPR.barArray.size(); idx++) {
+                        fileWriter.write("= " + SAPR.barArray.get(idx).number + " " +
+                                SAPR.barArray.get(idx).area + " " +
+                                SAPR.barArray.get(idx).elasticity + " " +
+                                SAPR.barArray.get(idx).length + " " +
+                                SAPR.barArray.get(idx).sigma + "\n");
+                    }
+                    fileWriter.write("Terminations:\n  Left   Right\n");
+                    if (leftTermination.isSelected()) {
+                        fileWriter.write("? 1 ");
+                    } else {
+                        fileWriter.write("? 0 ");
+                    }
+                    if (rightTermination.isSelected()) {
+                        fileWriter.write("1\n");
+                    } else {
+                        fileWriter.write("0\n");
+                    }
+                    fileWriter.write("Concentrated loads:\n");
+                    fileWriter.write("  Node F\n");
+                    for (int idx = 0; idx < SAPR.forceArray.size(); idx++) {
+                        fileWriter.write("# " + SAPR.forceArray.get(idx).number + " " +
+                                SAPR.forceArray.get(idx).value + "\n");
+                    }
+                    fileWriter.write("Distributed loads:\n");
+                    fileWriter.write("  Bar q\n");
+                    for (int idx = 0; idx < SAPR.loadArray.size(); idx++) {
+                        fileWriter.write("~ " + SAPR.loadArray.get(idx).number + " " +
+                                SAPR.loadArray.get(idx).value + "\n");
+                    }
+                    fileWriter.flush();
+                    fileWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                fileWriter.write("Terminations:\n  Left   Right\n");
-                if(leftTermination.isSelected()){  fileWriter.write("? 1 ");  }
-                else { fileWriter.write("? 0 ");  }
-                if(rightTermination.isSelected()) { fileWriter.write("1\n"); }
-                else { fileWriter.write("0\n"); }
-                fileWriter.write("Concentrated loads:\n");
-                fileWriter.write("  Node F\n");
-                for(int idx = 0; idx < SAPR.forceArray.size(); idx++){
-                    fileWriter.write("# " + SAPR.forceArray.get(idx).number + " " +
-                                         SAPR.forceArray.get(idx).value +"\n");
-                }
-                fileWriter.write("Distributed loads:\n");
-                fileWriter.write("  Bar q\n");
-                for(int idx = 0; idx < SAPR.loadArray.size(); idx++){
-                    fileWriter.write("~ " + SAPR.loadArray.get(idx).number + " " +
-                                         SAPR.loadArray.get(idx).value +"\n");
-                }
-                fileWriter.flush();
-                fileWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        stage.close();
-        });
+                stage.close();
+            });
 
-        group.getChildren().add(inviteText);
-        group.getChildren().add(createButton);
-        group.getChildren().add(fileNameTextField);
-        stage.setScene(new Scene(group, 380, 150));
-        stage.setResizable(false);
-        stage.show();
+            group.getChildren().add(inviteText);
+            group.getChildren().add(createButton);
+            group.getChildren().add(fileNameTextField);
+            stage.setScene(new Scene(group, 380, 150));
+            stage.setResizable(false);
+            stage.show();
+        }
     }
 
     public void openFileButtonClicked() {

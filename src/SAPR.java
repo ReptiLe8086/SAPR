@@ -24,20 +24,10 @@ public class SAPR extends Application{
 
     @Override
     public void start(Stage stage) throws IOException {
-
-//        FXMLLoader loader = new FXMLLoader();
-//        URL xmlUrl = getClass().getResource("/preprocessor.fxml");
-//        loader.setLocation(xmlUrl);
-       // loader.setController(new MainSceneController());
-       // Parent preprocessor = loader.load();
         FXMLLoader mainLoader = new FXMLLoader();
         URL mainXmlUrl = getClass().getResource("/mainWindow.fxml");
         mainLoader.setLocation(mainXmlUrl);
         Parent mainWindow = mainLoader.load();
-
-//        PreProcessorController preProcessorController =  loader.getController();
-//        preProcessorController.setValidator();
-        //mainSceneController.nodeComboBox.getItems().add(1);
         stage.setScene(new Scene(mainWindow));
 
         stage.show();
