@@ -19,7 +19,6 @@ public class MainWindowController {
         Parent root = preProcessorLoader.load(getClass().getResource("/preprocessor.fxml").openStream());
         ((PreProcessorController) preProcessorLoader.getController()).setValidator();
 
-
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.setResizable(false);
@@ -28,9 +27,20 @@ public class MainWindowController {
 
     public void processorClicked(ActionEvent event) throws IOException {
         Stage stage = new Stage();
-        FXMLLoader processorLoader = new FXMLLoader();
-        Parent root = processorLoader.load(getClass().getResource("/processor.fxml").openStream());
+        Parent root = FXMLLoader.load(getClass().getResource("/processor.fxml"));
 
+
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
+    }
+
+    public void postProcessorClicked(ActionEvent event) throws IOException {
+        Stage stage = new Stage();
+        FXMLLoader postProcessorLoader = new FXMLLoader();
+        Parent root = postProcessorLoader.load(getClass().getResource("/postprocessor.fxml").openStream());
+        ((PostProcessorController) postProcessorLoader.getController()).setStartSettings();
 
         Scene scene = new Scene(root);
         stage.setScene(scene);

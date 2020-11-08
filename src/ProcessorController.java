@@ -12,10 +12,19 @@ import java.util.ArrayList;
 
 public class ProcessorController {
 
-    public Integer termination_count;
-    public Integer nodeCount;
-    public boolean isLeftTermination = true;
-    public boolean isRightTermination = true;
+    private Integer nodeCount;
+    //public Integer barCount;
+    private boolean isLeftTermination = true;
+    private boolean isRightTermination = true;
+    public static double[] forces;
+    public static double[] loads;
+    public static double[] Nx_ks;
+    public static double[] Nx_bs;
+    public static double[] Ux_as;
+    public static double[] Ux_bs;
+    public static double[] Ux_cs;
+    public static double[] Sigma_ks;
+    public static double[] Sigma_bs;
 
     private final ArrayList<Double> elasticityArray = new ArrayList<>();
     private final ArrayList<Double> areaArray = new ArrayList<>();
@@ -37,10 +46,18 @@ public class ProcessorController {
     }
 
     public void calculating() {
-        double[] forces = new double[nodeCount];
-        double[] loads = new double[nodeCount - 1];
-        double[][] reactionMatrixData = new double[nodeCount][nodeCount];
         int barCount = nodeCount - 1;
+        forces = new double[nodeCount];
+        loads = new double[barCount];
+        Nx_ks = new double[barCount];
+        Nx_bs = new double[barCount];
+        Ux_as = new double[barCount];
+        Ux_bs = new double[barCount];
+        Ux_cs = new double[barCount];
+        Sigma_ks = new double[barCount];
+        Sigma_bs = new double[barCount];
+        double[][] reactionMatrixData = new double[nodeCount][nodeCount];
+
 
         for (int idx = 0; idx < nodeCount; idx++) {
             forces[idx] = .0;
@@ -51,7 +68,7 @@ public class ProcessorController {
             }
         }
 
-        for (int idx = 0; idx < nodeCount - 1; idx++) {
+        for (int idx = 0; idx < barCount; idx++) {
             loads[idx] = .0;
             for (Load load : SAPR.loadArray) {
                 if (load.number == idx + 1) {
@@ -97,9 +114,11 @@ public class ProcessorController {
             reactionMatrixData[barCount][barCount] = 1.0;
             reactionMatrixData[barCount - 1][barCount] = .0;
             reactionMatrixData[barCount][barCount - 1] = .0;
+            reactionVectorData[barCount][0] = .0;
         }
         else { reactionMatrixData[barCount][barCount] = (elasticityArray.get(barCount - 1) *
-                areaArray.get(barCount - 1)) / lengthArray.get(barCount - 1); }
+                areaArray.get(barCount - 1)) / lengthArray.get(barCount - 1);
+                reactionVectorData[barCount][0] = forces[barCount] + loads[barCount - 1] * lengthArray.get(barCount - 1) / 2;}
 
         RealMatrix reactionMatrix = MatrixUtils.createRealMatrix(reactionMatrixData);
         RealMatrix reactionVector = MatrixUtils.createRealMatrix(reactionVectorData);
@@ -113,24 +132,40 @@ public class ProcessorController {
         }
         System.arraycopy(uZeros, 1, uLengths, 0, barCount - 1);
         uLengths[barCount - 1] = deltaVector.getEntry(barCount, 0);
-        double[] Nxs = new double[2*barCount];
-        double[] Uxs = new double[nodeCount];
-        double x;
-        int count = 0;
+//        double[] nxs = new double[2 * barCount];
+//        double[] uxs = new double[nodeCount];
+//        double x;
+//        int count = 0;
+//        for(int idx = 0; idx < barCount; idx++){
+//            x = 0d;
+//            nxs[count] = -loads[idx]*x + Nx_b(elasticityArray.get(idx), areaArray.get(idx), lengthArray.get(idx),
+//                    uZeros[idx], uLengths[idx], loads[idx]);
+//            x = lengthArray.get(idx);
+//            count++;
+//            nxs[count] = -loads[idx]*x + Nx_b(elasticityArray.get(idx), areaArray.get(idx), lengthArray.get(idx),
+//                    uZeros[idx], uLengths[idx], loads[idx]);
+//            count++;
+//        }
+//
+//        System.arraycopy(uZeros, 0, uxs, 0, barCount);
+//        uxs[barCount] = uLengths[barCount - 1];
+
+
+        //polynome coeffs
         for(int idx = 0; idx < barCount; idx++){
-            x = 0d;
-            Nxs[count] = -loads[idx]*x + Nx_b(elasticityArray.get(idx), areaArray.get(idx), lengthArray.get(idx),
+            Nx_ks[idx] = -loads[idx];
+            Nx_bs[idx] = Nx_b(elasticityArray.get(idx), areaArray.get(idx), lengthArray.get(idx),
                     uZeros[idx], uLengths[idx], loads[idx]);
-            x = lengthArray.get(idx);
-            count++;
-            Nxs[count] = -loads[idx]*x + Nx_b(elasticityArray.get(idx), areaArray.get(idx), lengthArray.get(idx),
-                    uZeros[idx], uLengths[idx], loads[idx]);
-            count++;
+
+            Ux_as[idx] = Ux_a(elasticityArray.get(idx), areaArray.get(idx), loads[idx]);
+            Ux_bs[idx] = Ux_b(elasticityArray.get(idx), areaArray.get(idx), lengthArray.get(idx), uZeros[idx],
+                    uLengths[idx], loads[idx]);
+            Ux_cs[idx] = uZeros[idx];
+
+            Sigma_ks[idx] = Nx_ks[idx] / areaArray.get(idx);
+            Sigma_bs[idx] = Nx_bs[idx] / areaArray.get(idx);
+
         }
-
-        System.arraycopy(uZeros, 0, Uxs, 0, barCount);
-        Uxs[barCount] = uLengths[barCount - 1];
-
 
         for(int idx = 0; idx < barCount; idx++){
             System.out.println("N" + (idx+1) + "x: " + Precision.round(-loads[idx], 4) + "x + "
@@ -144,15 +179,15 @@ public class ProcessorController {
                     + "x + " +Precision.round(Nx_b(elasticityArray.get(idx), areaArray.get(idx), lengthArray.get(idx),
                     uZeros[idx], uLengths[idx], loads[idx]) / areaArray.get(idx), 4) + "\n");
         }
-
-        for(int idx = 0; idx < 2*barCount; idx++){
-            System.out.println("N" + (idx+1) + ":" + Precision.round(Nxs[idx], 4));
-        }
-
-        for(int idx = 0; idx < nodeCount; idx++){
-            System.out.println("U" + (idx+1) + ":" + Uxs[idx]);
-        }
-        System.out.println("###################");
+//
+//        for(int idx = 0; idx < 2*barCount; idx++){
+//            System.out.println("N" + (idx+1) + ":" + Precision.round(nxs[idx], 4));
+//        }
+//
+//        for(int idx = 0; idx < nodeCount; idx++){
+//            System.out.println("U" + (idx+1) + ":" + uxs[idx]);
+//        }
+//        System.out.println("###################");
     }
 
     public void openButtonClicked(ActionEvent event) {
@@ -160,7 +195,6 @@ public class ProcessorController {
         File projectFile = new File(filename);
 
         try {
-            termination_count = 0;
             SAPR.barArray.clear();
             SAPR.forceArray.clear();
             SAPR.loadArray.clear();
@@ -188,14 +222,8 @@ public class ProcessorController {
                                 lengthArray.add(bar.length);
                             }
                             case "?" -> {
-                                if (str[1].equals("1")) {
-                                    isLeftTermination = true;
-                                    termination_count += 1;
-                                } else isLeftTermination = false;
-                                if (str[2].equals("1")) {
-                                    isRightTermination = true;
-                                    termination_count += 1;
-                                } else isRightTermination = false;
+                                isLeftTermination = str[1].equals("1");
+                                isRightTermination = str[2].equals("1");
                             }
                             case "#" -> {
                                 Force force = new Force(Integer.parseInt(str[1]),
@@ -217,14 +245,18 @@ public class ProcessorController {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Alert a = new Alert(Alert.AlertType.WARNING);
-            a.setTitle("Warning");
-            a.setHeaderText("Wrong file");
-            a.setContentText("This file can't be opened!");
+            a.setTitle("Внимание");
+            a.setHeaderText("Проблемы с файлом");
+            a.setContentText("Этот файл не может быть открыт!");
             a.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
         }
         calculating();
-
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Успех");
+        a.setHeaderText("Рассчет проведен");
+        a.setContentText("Значения посчитаны успешно!");
+        a.showAndWait();
     }
 }

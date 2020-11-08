@@ -22,6 +22,7 @@ public class SAPR extends Application{
     public static ArrayList<Load> loadArray  = new ArrayList<>();
 
 
+
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader mainLoader = new FXMLLoader();

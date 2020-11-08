@@ -10,5 +10,5 @@
    <Button  layoutX="247.0" layoutY="184.0" mnemonicParsing="false" onAction="#processorClicked"
            prefHeight="40.0" prefWidth="179.0" text="Процессор"/>
    <Button  layoutX="247.0" layoutY="236.0" mnemonicParsing="false" prefHeight="40.0"
-           prefWidth="179.0" text="Постпроцессор"/>
+           prefWidth="179.0" text="Постпроцессор" onAction="#postProcessorClicked"/>
 </AnchorPane>

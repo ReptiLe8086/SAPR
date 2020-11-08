@@ -1,13 +1,10 @@
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -23,10 +20,13 @@ import java.util.ArrayList;
 
 
 public class PreProcessorController {
-    public Integer bar_count = 1;
-    public Integer selected_bar = -1;
-    public Integer selected_node = -1;
-    public Integer termination_count = 0;
+    public Integer barCount = 1;
+    public Integer selectedBar = -1;
+    public Integer selectedNode = -1;
+    public Integer terminationCount = 2;
+    private final Canvas canvas = new Canvas(1024, 680);
+    private final GraphicsContext gc = canvas.getGraphicsContext2D();
+
 
     public ObservableList<Bar> barr = FXCollections.observableArrayList();
 
@@ -79,13 +79,13 @@ public class PreProcessorController {
                 Double.parseDouble(LengthTextField.getText()) == 0 ||
                 Double.parseDouble(sigmaTextField.getText()) == 0) {
             Alert a = new Alert(AlertType.WARNING);
-            a.setTitle("Warning!");
-            a.setHeaderText("Wrong input");
-            a.setContentText("Values can't be 0!");
+            a.setTitle("Внимание!");
+            a.setHeaderText("Неправильный ввод");
+            a.setContentText("Значения не могут быть равны 0!");
             a.showAndWait();
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     @FXML
@@ -156,8 +156,8 @@ public class PreProcessorController {
 
     @FXML
     private void addBarClicked() {
-        if (!isCorrectValue()) {
-            Bar bar = new Bar(bar_count, Double.parseDouble(AreaTextField.getText()),
+        if (isCorrectValue()) {
+            Bar bar = new Bar(barCount, Double.parseDouble(AreaTextField.getText()),
                     Double.parseDouble(ElasticityTextField.getText()), Double.parseDouble(LengthTextField.getText()),
                     Double.parseDouble(sigmaTextField.getText()));
 
@@ -171,14 +171,14 @@ public class PreProcessorController {
             sigmaColumn.setCellValueFactory(new PropertyValueFactory<>("sigma"));
 
             barr.add(bar);
-            bar_count++;
+            barCount++;
 
             nodeComboBox.getItems().clear();
             loadComboBox.getItems().clear();
-            for (int idx = 1; idx <= bar_count; idx++) {
+            for (int idx = 1; idx <= barCount; idx++) {
                 nodeComboBox.getItems().add(idx);
             }
-            for (int idx = 1; idx < bar_count; idx++) {
+            for (int idx = 1; idx < barCount; idx++) {
                 loadComboBox.getItems().add(idx);
             }
 
@@ -187,7 +187,7 @@ public class PreProcessorController {
 
     @FXML
     public void nodeCBoxClicked() {
-        selected_node = nodeComboBox.getValue();
+        selectedNode = nodeComboBox.getValue();
     }
 
     @FXML
@@ -195,7 +195,7 @@ public class PreProcessorController {
         SAPR.barArray.remove(SAPR.barArray.size() - 1);
         barTable.getItems().remove(SAPR.barArray.size());
         for (int idx = 0; idx < SAPR.forceArray.size(); idx++) {
-            if (SAPR.forceArray.get(idx).number.equals(bar_count)) {
+            if (SAPR.forceArray.get(idx).number.equals(barCount)) {
                 SAPR.forceArray.remove(idx);
                 forceAr.remove(idx);
                 forceTable.getItems().remove(idx);
@@ -205,7 +205,7 @@ public class PreProcessorController {
         }
         for (int idx = 0; idx < SAPR.loadArray.size(); idx++) {
 
-            if (SAPR.loadArray.get(idx).number == bar_count - 1) {
+            if (SAPR.loadArray.get(idx).number == barCount - 1) {
                 SAPR.loadArray.remove(idx);
                 loadAr.remove(idx);
                 qTable.getItems().remove(idx);
@@ -213,15 +213,15 @@ public class PreProcessorController {
                 break;
             }
         }
-        bar_count--;
+        barCount--;
         forceTable.refresh();
         qTable.refresh();
         nodeComboBox.getItems().clear();
         loadComboBox.getItems().clear();
-        for (int idx = 1; idx <= bar_count; idx++) {
+        for (int idx = 1; idx <= barCount; idx++) {
             nodeComboBox.getItems().add(idx);
         }
-        for (int idx = 1; idx < bar_count; idx++) {
+        for (int idx = 1; idx < barCount; idx++) {
             loadComboBox.getItems().add(idx);
         }
         //        forceTable.getItems().remove(PreProcessor.nodeArray.size() - 1);
@@ -230,10 +230,10 @@ public class PreProcessorController {
 
     @FXML
     public void addForceClicked() {
-        if (selected_node >= 1) {
-            Force force = new Force(selected_node, Double.parseDouble(forceTextField.getText()));
+        if (selectedNode >= 1) {
+            Force force = new Force(selectedNode, Double.parseDouble(forceTextField.getText()));
             for (int idx = 0; idx < SAPR.forceArray.size(); idx++) {
-                if (selected_node.equals(SAPR.forceArray.get(idx).number)) {
+                if (selectedNode.equals(SAPR.forceArray.get(idx).number)) {
                     SAPR.forceArray.remove(idx);
                     forceAr.remove(idx);
                     forceTable.getItems().remove(idx);
@@ -248,9 +248,9 @@ public class PreProcessorController {
             forceAr.add(force);
         } else {
             Alert a = new Alert(AlertType.WARNING);
-            a.setTitle("Warning!");
-            a.setHeaderText("Choose node");
-            a.setContentText("Please, choose node");
+            a.setTitle("Внимание!");
+            a.setHeaderText("Нужно выбрать узел");
+            a.setContentText("Пожалуйста, выберите узел!");
             a.showAndWait();
         }
 
@@ -258,15 +258,15 @@ public class PreProcessorController {
 
     @FXML
     public void loadCBoxClicked() {
-        selected_bar = loadComboBox.getValue();
+        selectedBar = loadComboBox.getValue();
     }
 
     @FXML
     public void addLoadClicked() {
-        if (selected_bar >= 1) {
-            Load load = new Load(selected_bar, Double.parseDouble(loadTextField.getText()));
+        if (selectedBar >= 1) {
+            Load load = new Load(selectedBar, Double.parseDouble(loadTextField.getText()));
             for (int idx = 0; idx < SAPR.loadArray.size(); idx++) {
-                if (selected_bar.equals(SAPR.loadArray.get(idx).number)) {
+                if (selectedBar.equals(SAPR.loadArray.get(idx).number)) {
                     SAPR.loadArray.remove(idx);
                     loadAr.remove(idx);
                     qTable.getItems().remove(idx);
@@ -281,9 +281,9 @@ public class PreProcessorController {
             loadAr.add(load);
         } else {
             Alert a = new Alert(AlertType.WARNING);
-            a.setTitle("Warning!");
-            a.setHeaderText("Choose bar");
-            a.setContentText("Please, choose bar");
+            a.setTitle("Внимание!");
+            a.setHeaderText("Выберите стержень");
+            a.setContentText("Пожалуйста, выберите стержень!");
             a.showAndWait();
         }
     }
@@ -291,27 +291,27 @@ public class PreProcessorController {
     @FXML
     public void leftTerminationClicked() {
         if (leftTermination.isSelected()) {
-            termination_count++;
+            terminationCount++;
         } else {
-            termination_count--;
+            terminationCount--;
         }
     }
 
     @FXML
     public void rightTerminationClicked() {
         if (rightTermination.isSelected()) {
-            termination_count++;
+            terminationCount++;
         } else {
-            termination_count--;
+            terminationCount--;
         }
     }
 
     public boolean isValidTermination() {
-        if (termination_count <= 0) {
+        if (terminationCount <= 0) {
             Alert a = new Alert(AlertType.WARNING);
-            a.setTitle("Warning!");
-            a.setHeaderText("Wrong termination count!");
-            a.setContentText("Please, choose at least 1 terminations!");
+            a.setTitle("Внимание!");
+            a.setHeaderText("Неправильное количество жестких заделок!");
+            a.setContentText("Пожалуйста, выберите как минимум 1 жесткую заделку!");
             a.showAndWait();
             return false;
         } else {
@@ -321,9 +321,7 @@ public class PreProcessorController {
 
     public void paintButtonClicked(){
         if (isValidTermination()) {
-
-            Canvas canvas = new Canvas(1024, 680);
-            var gc = canvas.getGraphicsContext2D();
+            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
             gc.setFill(Color.WHITE);
             double wholeLength = 900;
             double wholeArea = 450;
@@ -733,8 +731,8 @@ public class PreProcessorController {
             File projectFile = new File(filename);
 
             try {
-                termination_count = 0;
-                bar_count = 1;
+                terminationCount = 0;
+                barCount = 1;
                 SAPR.barArray.clear();
                 SAPR.forceArray.clear();
                 SAPR.loadArray.clear();
@@ -767,17 +765,17 @@ public class PreProcessorController {
                                     lengthColumn.setCellValueFactory(new PropertyValueFactory<>("length"));
                                     sigmaColumn.setCellValueFactory(new PropertyValueFactory<>("sigma"));
                                     barr.add(bar);
-                                    bar_count++;
+                                    barCount++;
                                 }
                                 case "?" -> {
                                    if(str[1].equals("1")){
                                        leftTermination.setSelected(true);
-                                       termination_count += 1;
+                                       terminationCount += 1;
                                    }
                                    else leftTermination.setSelected(false);
                                    if(str[2].equals("1")){
                                        rightTermination.setSelected(true);
-                                       termination_count += 1;
+                                       terminationCount += 1;
                                    }
                                    else rightTermination.setSelected(false);
                                 }
@@ -789,7 +787,7 @@ public class PreProcessorController {
                                     nodeColumn.setCellValueFactory(new PropertyValueFactory<>("number"));
                                     forceColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
                                     forceAr.add(force);
-                                    for (int idx = 1; idx <= bar_count; idx++) {
+                                    for (int idx = 1; idx <= barCount; idx++) {
                                         nodeComboBox.getItems().add(idx);
                                     }
                                 }
@@ -801,7 +799,7 @@ public class PreProcessorController {
                                     barLoadColumn.setCellValueFactory(new PropertyValueFactory<>("number"));
                                     loadColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
                                     loadAr.add(load);
-                                    for (int idx = 1; idx < bar_count; idx++) {
+                                    for (int idx = 1; idx < barCount; idx++) {
                                         loadComboBox.getItems().add(idx);
                                     }
                                 }
