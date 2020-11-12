@@ -1,7 +1,9 @@
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -32,6 +34,9 @@ public class ProcessorController {
 
     @FXML
     private TextField fileNameTextField;
+
+    @FXML
+    private Button openButton;
 
     public double Nx_b(double E, double A, double L, double Up0, double UpL, double q){
         return (E*A/L) * (UpL - Up0) + q*L/2;
@@ -258,5 +263,7 @@ public class ProcessorController {
         a.setHeaderText("Рассчет проведен");
         a.setContentText("Значения посчитаны успешно!");
         a.showAndWait();
+        Stage stage = (Stage) openButton.getScene().getWindow();
+        stage.close();
     }
 }
